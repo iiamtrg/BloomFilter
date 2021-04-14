@@ -10,7 +10,7 @@ var FilterBuilder = (function () {
         this.expectedElements = 0;
         this.size = 0;
         this.hashes = 0;
-        this.flasePositiveP = 0.1;
+        this.falsePositiveP = 0.1;
         this.hashFunction = new HashProvider_1.Murmur3();
     }
     FilterBuilder.prototype.BloomFilter = function () {
@@ -25,8 +25,8 @@ var FilterBuilder = (function () {
         this.expectedElements = expectedElements;
         return this;
     };
-    FilterBuilder.prototype.FalsePositiveProbability = function (flasePositiveP) {
-        this.flasePositiveP = flasePositiveP;
+    FilterBuilder.prototype.FalsePositiveProbability = function (falsePositiveP) {
+        this.falsePositiveP = falsePositiveP;
         return this;
     };
     FilterBuilder.prototype.Size = function (size) {
@@ -66,8 +66,8 @@ var FilterBuilder = (function () {
         return Object.assign(Object.create(FilterBuilder.prototype), this);
     };
     FilterBuilder.prototype.complete = function () {
-        if (this.size === 0 && this.expectedElements !== 0 && this.flasePositiveP !== 0) {
-            this.size = this.optimalM(this.expectedElements, this.flasePositiveP);
+        if (this.size === 0 && this.expectedElements !== 0 && this.falsePositiveP !== 0) {
+            this.size = this.optimalM(this.expectedElements, this.falsePositiveP);
         }
         if (this.hashes === 0 && this.expectedElements !== 0 && this.size !== 0) {
             this.hashes = this.optimalK(this.expectedElements, this.size);
@@ -76,19 +76,13 @@ var FilterBuilder = (function () {
             throw new Error('Neither (expectedElements, falsePositiveProbability) nor (size, hashes) were specified.s');
         }
     };
-    FilterBuilder.prototype.Build = function () {
+    FilterBuilder.prototype.buildBloomFilter = function () {
         this.complete();
-        return this.build();
+        return new BloomFilter_1.BloomFilter(this);
     };
-    FilterBuilder.prototype.build = function () {
-        switch (this.tp) {
-            case Filter_1.FilterType.TYPE_DEFAULT:
-                return new BloomFilter_1.BloomFilter(this);
-            case Filter_1.FilterType.TYPE_COUNTING:
-                return new CountingBloomFilter_1.CountingBloomFilter(this);
-            default:
-                throw new Error("Unknow type " + this.tp);
-        }
+    FilterBuilder.prototype.buildCountingBloomFilter = function () {
+        this.complete();
+        return new CountingBloomFilter_1.CountingBloomFilter(this);
     };
     return FilterBuilder;
 }());
