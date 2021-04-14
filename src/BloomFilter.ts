@@ -1,15 +1,16 @@
-import { Filter } from './Filter';
+import { IFilter } from './Filter';
 import { FilterBuilder } from './FilterBuilder';
+import {Bitset} from "./Bitset";
 
 
-export class BloomFilter extends Filter {
+export class BloomFilter implements IFilter {
 
     private config: FilterBuilder;
+    private _bloom: Bitset;
     constructor(config: FilterBuilder) {
-        super();
         this.config = config;
         this.config.complete();
-        this.constructorBitset(this.config.Size());
+        this._bloom = new Bitset(this.config.Size());
     }
 
 
@@ -29,7 +30,6 @@ export class BloomFilter extends Filter {
             keys.forEach(key => {
                 result.push(this.addRaw(key));
             })
-
             return result;
         }
     }
@@ -45,9 +45,9 @@ export class BloomFilter extends Filter {
 
         const positions = cfg.HashFunction().hash(key, cfg.Size(), cfg.Hashses());
         positions.forEach(pos => {
-            if (!this.has(pos)) {
+            if (!this.getBit(pos)) {
                 added = true;
-                this.increment(pos);
+                this.setBit(pos, true);
             }
         })
         return added;
@@ -67,7 +67,7 @@ export class BloomFilter extends Filter {
             const positions = cfg.HashFunction().hash(keys, cfg.Size(), cfg.Hashses());
             let result = true;
             positions.forEach(pos => {
-                if (!this.has(pos)) {
+                if (!this.getBit(pos)) {
                     result = false
                     return;
                 }
@@ -75,13 +75,11 @@ export class BloomFilter extends Filter {
             return result;
 
         } else {
-
             let result: boolean[] = [];
-
             keys.forEach(key => {
                 const positions = cfg.HashFunction().hash(key, cfg.Size(), cfg.Hashses());
                 positions.forEach(pos => {
-                    if (!this.has(pos)) {
+                    if (!this.getBit(pos)) {
                         result.push(false);
                         return;
                     }
@@ -90,6 +88,14 @@ export class BloomFilter extends Filter {
             })
             return result;
         }
+    }
+
+    public getBit(index: number): boolean {
+        return this._bloom.get(index);
+    }
+
+    public setBit(index: number, value: boolean){
+        this._bloom.set(index, value)
     }
 
 }
