@@ -1,5 +1,5 @@
 {
-  "name": "bloom-filter",
+  "name": "mbloomfilter",
   "version": "0.1.0",
   "description": "The provides the bloom-filter package which implement a Bloom Filter",
   "main": "index.ts",
