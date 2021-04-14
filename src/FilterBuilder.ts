@@ -1,6 +1,6 @@
 import { BloomFilter } from './BloomFilter';
 import { CountingBloomFilter } from './CountingBloomFilter';
-import { Filter, FilterType } from './Filter';
+import { FilterType } from './Filter';
 import { HashFunction, Murmur3 } from './HashProvider'
 
 export class FilterBuilder {
@@ -8,7 +8,7 @@ export class FilterBuilder {
     private expectedElements: number = 0;
     private size: number = 0;
     private hashes: number = 0;
-    private flasePositiveP: number = 0.1;
+    private falsePositiveP: number = 0.1;
     private hashFunction = new Murmur3();
 
     constructor() {
@@ -40,11 +40,11 @@ export class FilterBuilder {
     }
 
     /**
-     * @param falsePositiveProbability the tolerable false
+     * @param falsePositiveP the tolerable false
      * @return the modified FilterBuilder (fluent interface)
      */
-    public FalsePositiveProbability(flasePositiveP: number): FilterBuilder {
-        this.flasePositiveP = flasePositiveP;
+    public FalsePositiveProbability(falsePositiveP: number): FilterBuilder {
+        this.falsePositiveP = falsePositiveP;
         return this;
     }
 
@@ -77,7 +77,7 @@ export class FilterBuilder {
     public Hashses(numberOfHashes: number): FilterBuilder;
 
     /**
-     * @reutnr number of hash functions used by the filter.
+     * @return number of hash functions used by the filter.
      */
     public Hashses(): number;
 
@@ -142,8 +142,8 @@ export class FilterBuilder {
      * @return the completed FilterBuilder
      */
     public complete() {
-        if (this.size === 0 && this.expectedElements !== 0 && this.flasePositiveP !== 0) {
-            this.size = this.optimalM(this.expectedElements, this.flasePositiveP);
+        if (this.size === 0 && this.expectedElements !== 0 && this.falsePositiveP !== 0) {
+            this.size = this.optimalM(this.expectedElements, this.falsePositiveP);
         }
 
         if (this.hashes === 0 && this.expectedElements !== 0 && this.size !== 0) {
@@ -156,26 +156,19 @@ export class FilterBuilder {
     }
 
     /**
-     * @returns the constructed Filter
+     * @returns the constructed BloomFilter
      */
-    public Build(): Filter {
+    public buildBloomFilter(): BloomFilter {
         this.complete();
-        return this.build();
+        return new BloomFilter(this);
     }
 
-
-
-    private build(): Filter {
-        switch (this.tp) {
-            case FilterType.TYPE_DEFAULT:
-                return new BloomFilter(this);
-            case FilterType.TYPE_COUNTING:
-                return new CountingBloomFilter(this);
-            default:
-                throw new Error(`Unknow type ${this.tp}`);
-        }
+    /**
+     * @returns the constructed BloomFilter
+     */
+    public buildCountingBloomFilter(): CountingBloomFilter {
+        this.complete();
+        return new CountingBloomFilter(this)
     }
-
-
 
 }
