@@ -1,6 +1,7 @@
-import { Filter } from './Filter';
+import { IFilter } from './Filter';
 import { FilterBuilder } from './FilterBuilder';
-export declare class CountingBloomFilter extends Filter {
+import { IRemovable } from './IRemovable';
+export declare class CountingBloomFilter implements IFilter, IRemovable<string> {
     private config;
     private filter;
     constructor(config: FilterBuilder);
